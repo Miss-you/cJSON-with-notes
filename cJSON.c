@@ -215,6 +215,7 @@ static unsigned parse_hex4(const char *str)
 /* Parse the input text into an unescaped cstring, and populate item. */
 //不太懂这个作何用
 static const unsigned char firstByteMark[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+//不清楚……
 static const char *parse_string(cJSON *item,const char *str)
 {
     const char *ptr=str+1;char *ptr2;char *out;int len=0;unsigned uc,uc2;
@@ -684,6 +685,7 @@ static char *print_object(cJSON *item,int depth,int fmt,printbuffer *p)
 }
 
 /* Get Array size/item / object item. */
+//这里的Array的元素之间使用的是cJSON结构的child指针，按序指向……
 int    cJSON_GetArraySize(cJSON *array)							{cJSON *c=array->child;int i=0;while(c)i++,c=c->next;return i;}
 cJSON *cJSON_GetArrayItem(cJSON *array,int item)				{cJSON *c; if (array == NULL) return NULL; c=array->child;  while (c && item>0) item--,c=c->next; return c;}
 cJSON *cJSON_GetObjectItem(cJSON *object,const char *string)	{cJSON *c; if (object == NULL) return NULL; c=object->child; while (c && cJSON_strcasecmp(c->string,string)) c=c->next; return c;}
