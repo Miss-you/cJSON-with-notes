@@ -35,8 +35,8 @@
 static const char *ep;
 
 const char *cJSON_GetErrorPtr(void) {return ep;}
-//cJSON的string键值不区分大小写。。
-//TODO，没看懂，。。。。额。懂了，就是无视大小写的字符串比较
+
+//TODO，没看懂
 static int cJSON_strcasecmp(const char *s1,const char *s2)
 {
     if (!s1) return (s1==s2)?0:1;if (!s2) return 1;
@@ -215,7 +215,6 @@ static unsigned parse_hex4(const char *str)
 /* Parse the input text into an unescaped cstring, and populate item. */
 //不太懂这个作何用
 static const unsigned char firstByteMark[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
-//不清楚……
 static const char *parse_string(cJSON *item,const char *str)
 {
     const char *ptr=str+1;char *ptr2;char *out;int len=0;unsigned uc,uc2;
@@ -685,13 +684,9 @@ static char *print_object(cJSON *item,int depth,int fmt,printbuffer *p)
 }
 
 /* Get Array size/item / object item. */
-//这里的Array的元素之间使用的是cJSON结构的child指针，按序指向……
 int    cJSON_GetArraySize(cJSON *array)							{cJSON *c=array->child;int i=0;while(c)i++,c=c->next;return i;}
-//获取array cJSON数组中的第item个元素，从0开始计数，如果item值超过array大小，返回NULL
 cJSON *cJSON_GetArrayItem(cJSON *array,int item)				{cJSON *c; if (array == NULL) return NULL; c=array->child;  while (c && item>0) item--,c=c->next; return c;}
-//获取object对象中，键值为string的cJSON对象
 cJSON *cJSON_GetObjectItem(cJSON *object,const char *string)	{cJSON *c; if (object == NULL) return NULL; c=object->child; while (c && cJSON_strcasecmp(c->string,string)) c=c->next; return c;}
-//查询object所存储的下一层对象中，有没有键值为string的对象
 int cJSON_HasObjectItem(cJSON *object,const char *string)	{
     cJSON *c=object->child;
     while (c )
@@ -731,15 +726,11 @@ void   cJSON_ReplaceItemInArray(cJSON *array,int which,cJSON *newitem)		{cJSON *
 void   cJSON_ReplaceItemInObject(cJSON *object,const char *string,cJSON *newitem){int i=0;cJSON *c=object->child;while(c && cJSON_strcasecmp(c->string,string))i++,c=c->next;if(c){newitem->string=cJSON_strdup(string);cJSON_ReplaceItemInArray(object,i,newitem);}}
 
 /* Create basic types: */
-//这几种只有type存储数值
 cJSON *cJSON_CreateNull(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_NULL;return item;}
 cJSON *cJSON_CreateTrue(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_True;return item;}
 cJSON *cJSON_CreateFalse(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_False;return item;}
-//item->type=b?cJSON_True:cJSON_False，这个意思是说，b是非0那么值就是cJSON_True，否则就是cJSON_False
 cJSON *cJSON_CreateBool(int b)					{cJSON *item=cJSON_New_Item();if(item)item->type=b?cJSON_True:cJSON_False;return item;}
-//存储其浮点值以及整数值
 cJSON *cJSON_CreateNumber(double num)			{cJSON *item=cJSON_New_Item();if(item){item->type=cJSON_Number;item->valuedouble=num;item->valueint=(int)num;}return item;}
-//申请一段空间用于存储字符串，然后生成一个cJSON String对象
 cJSON *cJSON_CreateString(const char *string)	{cJSON *item=cJSON_New_Item();if(item){item->type=cJSON_String;item->valuestring=cJSON_strdup(string);}return item;}
 cJSON *cJSON_CreateArray(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_Array;return item;}
 cJSON *cJSON_CreateObject(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_Object;return item;}
