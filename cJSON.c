@@ -719,9 +719,13 @@ static char *print_object(cJSON *item,int depth,int fmt,printbuffer *p)
 }
 
 /* Get Array size/item / object item. */
+/* array是链表存储，next指向下一个，所以直接遍历next指针就可以知道array大小 */
 int    cJSON_GetArraySize(cJSON *array)							{cJSON *c=array->child;int i=0;while(c)i++,c=c->next;return i;}
+/* 跟cJSON_GetArraySize差不多，增加个计数即可 */
 cJSON *cJSON_GetArrayItem(cJSON *array,int item)				{cJSON *c; if (array == NULL) return NULL; c=array->child;  while (c && item>0) item--,c=c->next; return c;}
+/* 遍历当前JSON数组，找出键值为string的JSON对象，否则返回NULL */
 cJSON *cJSON_GetObjectItem(cJSON *object,const char *string)	{cJSON *c; if (object == NULL) return NULL; c=object->child; while (c && cJSON_strcasecmp(c->string,string)) c=c->next; return c;}
+/* 遍历当前JSON数组，查询是否有键值为string的JSON对象，有返回1，没有返回0（C语言中0代表false，非0代表true） */
 int cJSON_HasObjectItem(cJSON *object,const char *string)	{
     cJSON *c=object->child;
     while (c )
