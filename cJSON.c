@@ -107,15 +107,27 @@ static const char *parse_number(cJSON *item,const char *num)
     
     if (*num=='-') sign=-1,num++;	/* Has sign? */
     if (*num=='0') num++;			/* is zero */
+    
+    /* 这里的存储方式大概x * 10 ^ n（n可正可负）这样存储
+       譬如3，存储为3 * 10 ^ 0
+       譬如3.1 存储 31 * 10 ^ -1
+       譬如3e10，存储 3 * 10 ^ 10
+       当然如果有正负号，还有一个sign/scalesign的值来存储数的正负号和指数的正负号~
+    */
+    /* 计算到小数点之前或者数字结束 */
     if (*num>='1' && *num<='9')	do	n=(n*10.0)+(*num++ -'0');	while (*num>='0' && *num<='9');	/* Number? */
+    /* 如果遇到了小数点？ */
     if (*num=='.' && num[1]>='0' && num[1]<='9') {num++;		do	n=(n*10.0)+(*num++ -'0'),scale--; while (*num>='0' && *num<='9');}	/* Fractional part? */
+    /* 如果后面跟的是e，指数 */
     if (*num=='e' || *num=='E')		/* Exponent? */
     {	num++;if (*num=='+') num++;	else if (*num=='-') signsubscale=-1,num++;		/* With sign? */
         while (*num>='0' && *num<='9') subscale=(subscale*10)+(*num++ - '0');	/* Number? */
     }
     
+    /* 根据之前的存储方式计算出最后结果 */
     n=sign*n*pow(10.0,(scale+subscale*signsubscale));	/* number = +/- number.fraction * 10^+/- exponent */
     
+    /* 计算结果存在double，另外再存储个转化为整数的整数值 */
     item->valuedouble=n;
     item->valueint=(int)n;
     item->type=cJSON_Number;
@@ -242,7 +254,7 @@ static const char *parse_string(cJSON *item,const char *str)
                 case 'n': *ptr2++='\n';	break;
                 case 'r': *ptr2++='\r';	break;
                 case 't': *ptr2++='\t';	break;
-                /* unicode字符 */
+                /* 处理unicode字符 */
                 case 'u':	 /* transcode utf16 to utf8. */
                     uc=parse_hex4(ptr+1);ptr+=4;	/* get the unicode char. */
                     
@@ -350,6 +362,7 @@ static char *print_object(cJSON *item,int depth,int fmt,printbuffer *p);
 /* Utility to jump whitespace and cr/lf */
 static const char *skip(const char *in) {while (in && *in && (unsigned char)*in<=32) in++; return in;}
 
+/* 创建cJSON结构体根节点 */
 /* Parse an object - create a new root, and populate. */
 cJSON *cJSON_ParseWithOpts(const char *value,const char **return_parse_end,int require_null_terminated)
 {
