@@ -223,11 +223,14 @@ static const char *parse_string(cJSON *item,const char *str)
     while (*ptr!='\"' && *ptr && ++len) if (*ptr++ == '\\') ptr++;	/* Skip escaped quotes. */
     
     out=(char*)cJSON_malloc(len+1);	/* This is how long we need for the string, roughly. */
+    /* alloc memory failed */
     if (!out) return 0;
     
+    /* back to string head */
     ptr=str+1;ptr2=out;
     while (*ptr!='\"' && *ptr)
     {
+        /* copy */
         if (*ptr!='\\') *ptr2++=*ptr++;
         else
         {
@@ -239,6 +242,7 @@ static const char *parse_string(cJSON *item,const char *str)
                 case 'n': *ptr2++='\n';	break;
                 case 'r': *ptr2++='\r';	break;
                 case 't': *ptr2++='\t';	break;
+                /* unicode字符 */
                 case 'u':	 /* transcode utf16 to utf8. */
                     uc=parse_hex4(ptr+1);ptr+=4;	/* get the unicode char. */
                     
