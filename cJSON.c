@@ -452,6 +452,9 @@ static char *print_value(cJSON *item,int depth,int fmt,printbuffer *p)
 /* Build an array from input text. */
 static const char *parse_array(cJSON *item,const char *value)
 {
+    /* 
+        整体思路就是，到]之前，循环调用parse_value来处理数值，注意一些具体细节、循环结束条件以及跳过空格等字符
+    */
     cJSON *child;
     if (*value!='[')	{ep=value;return 0;}	/* not an array! */
     
@@ -461,6 +464,8 @@ static const char *parse_array(cJSON *item,const char *value)
     
     item->child=child=cJSON_New_Item();
     if (!item->child) return 0;		 /* memory fail */
+    
+    /*  */
     value=skip(parse_value(child,skip(value)));	/* skip any spacing, get the value. */
     if (!value) return 0;
     
@@ -558,6 +563,11 @@ static char *print_array(cJSON *item,int depth,int fmt,printbuffer *p)
 }
 
 /* Build an object from the text. */
+/* 处理JSON 对象，同一层中的所有JSON对象都会处理
+   因为JSON对象结构就是{{vala:vala1}, {valb:valb1} ... }
+   那么该函数的作用就是读取vala、valb的值，然后处理vala1、valb1
+   处理方式跟array差不多……
+*/
 static const char *parse_object(cJSON *item,const char *value)
 {
     cJSON *child;
@@ -569,13 +579,17 @@ static const char *parse_object(cJSON *item,const char *value)
     
     item->child=child=cJSON_New_Item();
     if (!item->child) return 0;
+    /* 先跳过空格，然后读取键值，然后再跳空格 */
     value=skip(parse_string(child,skip(value)));
     if (!value) return 0;
     child->string=child->valuestring;child->valuestring=0;
+    /* 处理到':'了 */
     if (*value!=':') {ep=value;return 0;}	/* fail! */
+    /* 处理键值所存储的值，这个值有可能是Number、balba什么都有可能 */
     value=skip(parse_value(child,skip(value+1)));	/* skip any spacing, get the value. */
     if (!value) return 0;
     
+    /* 循环处理 */
     while (*value==',')
     {
         cJSON *new_item;
