@@ -32,6 +32,7 @@
 #include <ctype.h>
 #include "cJSON.h"
 
+/* 什么都不说了。。这个是Error Pointer。。。这名字起的。。 */
 static const char *ep;
 
 const char *cJSON_GetErrorPtr(void) {return ep;}
@@ -382,6 +383,7 @@ cJSON *cJSON_ParseWithOpts(const char *value,const char **return_parse_end,int r
 /* Default options for cJSON_Parse */
 cJSON *cJSON_Parse(const char *value) {return cJSON_ParseWithOpts(value,0,0);}
 
+/* 将cJSON对象转换成字符串 */
 /* Render a cJSON item/entity/structure to text. */
 char *cJSON_Print(cJSON *item)				{return print_value(item,0,1,0);}
 char *cJSON_PrintUnformatted(cJSON *item)	{return print_value(item,0,0,0);}
@@ -424,6 +426,7 @@ static char *print_value(cJSON *item,int depth,int fmt,printbuffer *p)
     {
         switch ((item->type)&255)
         {
+            /* 先保证有足够字符空间，然后拷贝 */
             case cJSON_NULL:	{out=ensure(p,5);	if (out) strcpy(out,"null");	break;}
             case cJSON_False:	{out=ensure(p,6);	if (out) strcpy(out,"false");	break;}
             case cJSON_True:	{out=ensure(p,5);	if (out) strcpy(out,"true");	break;}
@@ -435,6 +438,7 @@ static char *print_value(cJSON *item,int depth,int fmt,printbuffer *p)
     }
     else
     {
+        /* 创建空间 */
         switch ((item->type)&255)
         {
             case cJSON_NULL:	out=cJSON_strdup("null");	break;
@@ -628,6 +632,7 @@ static char *print_object(cJSON *item,int depth,int fmt,printbuffer *p)
         *ptr++='}';*ptr++=0;
         return out;
     }
+    /* 如果已经申请空间 */
     if (p)
     {
         /* Compose the output: */
@@ -666,6 +671,7 @@ static char *print_object(cJSON *item,int depth,int fmt,printbuffer *p)
         *ptr++='}';*ptr=0;
         out=(p->buffer)+i;
     }
+    /* 如果还未申请空间~ */
     else
     {
         /* Allocate space for the names and the objects */
@@ -744,8 +750,11 @@ static void suffix_object(cJSON *prev,cJSON *item) {prev->next=item;item->prev=p
 static cJSON *create_reference(cJSON *item) {cJSON *ref=cJSON_New_Item();if (!ref) return 0;memcpy(ref,item,sizeof(cJSON));ref->string=0;ref->type|=cJSON_IsReference;ref->next=ref->prev=0;return ref;}
 
 /* Add item to array/object. */
+/* 如果array没有对象，直接添加；如果有对象，则直接添加到末尾 */
 void   cJSON_AddItemToArray(cJSON *array, cJSON *item)						{cJSON *c=array->child;if (!item) return; if (!c) {array->child=item;} else {while (c && c->next) c=c->next; suffix_object(c,item);}}
+/* 。。。这个有点神奇，，就是在JSON数组中添加键值为string、JSON内容为item的JSON对象 */
 void   cJSON_AddItemToObject(cJSON *object,const char *string,cJSON *item)	{if (!item) return; if (item->string) cJSON_free(item->string);item->string=cJSON_strdup(string);cJSON_AddItemToArray(object,item);}
+/* ？？？？不懂 */
 void   cJSON_AddItemToObjectCS(cJSON *object,const char *string,cJSON *item)	{if (!item) return; if (!(item->type&cJSON_StringIsConst) && item->string) cJSON_free(item->string);item->string=(char*)string;item->type|=cJSON_StringIsConst;cJSON_AddItemToArray(object,item);}
 void	cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item)						{cJSON_AddItemToArray(array,create_reference(item));}
 void	cJSON_AddItemReferenceToObject(cJSON *object,const char *string,cJSON *item)	{cJSON_AddItemToObject(object,string,create_reference(item));}
@@ -765,6 +774,7 @@ void   cJSON_ReplaceItemInArray(cJSON *array,int which,cJSON *newitem)		{cJSON *
 void   cJSON_ReplaceItemInObject(cJSON *object,const char *string,cJSON *newitem){int i=0;cJSON *c=object->child;while(c && cJSON_strcasecmp(c->string,string))i++,c=c->next;if(c){newitem->string=cJSON_strdup(string);cJSON_ReplaceItemInArray(object,i,newitem);}}
 
 /* Create basic types: */
+/* 没啥好说的，很简单 */
 cJSON *cJSON_CreateNull(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_NULL;return item;}
 cJSON *cJSON_CreateTrue(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_True;return item;}
 cJSON *cJSON_CreateFalse(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_False;return item;}
@@ -775,6 +785,7 @@ cJSON *cJSON_CreateArray(void)					{cJSON *item=cJSON_New_Item();if(item)item->t
 cJSON *cJSON_CreateObject(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_Object;return item;}
 
 /* Create Arrays: */
+/* 没啥好说的，很简单 */
 cJSON *cJSON_CreateIntArray(const int *numbers,int count)		{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateNumber(numbers[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}
 cJSON *cJSON_CreateFloatArray(const float *numbers,int count)	{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateNumber(numbers[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}
 cJSON *cJSON_CreateDoubleArray(const double *numbers,int count)	{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateNumber(numbers[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}
