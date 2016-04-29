@@ -296,6 +296,7 @@ static char *print_string_ptr(const char *str,printbuffer *p)
 {
     const char *ptr;char *ptr2,*out;int len=0,flag=0;unsigned char token;
     
+    /* 输入字符串为空，那么就赋值"" */
     if (!str)
     {
         if (p)	out=ensure(p,3);
