@@ -306,7 +306,10 @@ static char *print_string_ptr(const char *str,printbuffer *p)
         return out;
     }
     
+    /* 这里似乎是扫描字符串查看有没有ascii码在1-31的字符或者是'\'或'"'，有的话，flag是1，没有就是0 */
     for (ptr=str;*ptr;ptr++) flag|=((*ptr>0 && *ptr<32)||(*ptr=='\"')||(*ptr=='\\'))?1:0;
+    
+    /* 如果没有,直接转换，这个比较容易 */
     if (!flag)
     {
         len=ptr-str;
@@ -320,6 +323,7 @@ static char *print_string_ptr(const char *str,printbuffer *p)
         return out;
     }
     
+    /* 如果有的话，就需要考虑转义字符/unicode的场景了 */
     ptr=str;while ((token=*ptr) && ++len) {if (strchr("\"\\\b\f\n\r\t",token)) len++; else if (token<32) len+=5;ptr++;}
     
     if (p)	out=ensure(p,len+3);
