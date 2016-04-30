@@ -324,22 +324,30 @@ static char *print_string_ptr(const char *str,printbuffer *p)
     }
     
     /* 如果有的话，就需要考虑转义字符/unicode的场景了 */
+    /* 这里是计算需要多长长度，比如\\这种需要两个长度；如果anscii码值小于32，则需要6个长度(这个场景应该就是unicode编码的场景)
+       用于计算申请多少空间
+    */
     ptr=str;while ((token=*ptr) && ++len) {if (strchr("\"\\\b\f\n\r\t",token)) len++; else if (token<32) len+=5;ptr++;}
     
+    /* 申请空间 */
     if (p)	out=ensure(p,len+3);
     else	out=(char*)cJSON_malloc(len+3);
     if (!out) return 0;
     
+    /* 填结果 */
     ptr2=out;ptr=str;
     *ptr2++='\"';
     while (*ptr)
     {
+        /* 普通字符 */
         if ((unsigned char)*ptr>31 && *ptr!='\"' && *ptr!='\\') *ptr2++=*ptr++;
+        /* 特殊转意字符or unicode编码格式的 */
         else
         {
             *ptr2++='\\';
             switch (token=*ptr++)
             {
+                /* 普通转义字符 */
                 case '\\':	*ptr2++='\\';	break;
                 case '\"':	*ptr2++='\"';	break;
                 case '\b':	*ptr2++='b';	break;
@@ -347,6 +355,7 @@ static char *print_string_ptr(const char *str,printbuffer *p)
                 case '\n':	*ptr2++='n';	break;
                 case '\r':	*ptr2++='r';	break;
                 case '\t':	*ptr2++='t';	break;
+                /* unicode编码格式的值 */
                 default: sprintf(ptr2,"u%04x",token);ptr2+=5;	break;	/* escape and print */
             }
         }
