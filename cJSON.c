@@ -509,8 +509,11 @@ static char *print_array(cJSON *item,int depth,int fmt,printbuffer *p)
     int numentries=0,i=0,fail=0;
     size_t tmplen=0;
     
+    /* 先查看cJSON数组中有多少个cJSON对象 */
     /* How many entries in the array? */
     while (child) numentries++,child=child->next;
+    
+    /* 数组为空 */
     /* Explicitly handle numentries==0 */
     if (!numentries)
     {
@@ -520,22 +523,27 @@ static char *print_array(cJSON *item,int depth,int fmt,printbuffer *p)
         return out;
     }
     
+    /*  */
     if (p)
     {
         /* Compose the output array. */
         i=p->offset;
+        /* 添加左括号 */
         ptr=ensure(p,1);if (!ptr) return 0;	*ptr='[';	p->offset++;
         child=item->child;
         while (child && !fail)
         {
+            /* 转换数组元素 */
             print_value(child,depth+1,fmt,p);
             p->offset=update(p);
             if (child->next) {len=fmt?2:1;ptr=ensure(p,len+1);if (!ptr) return 0;*ptr++=',';if(fmt)*ptr++=' ';*ptr=0;p->offset+=len;}
             child=child->next;
         }
+        /* 添加右括号 */
         ptr=ensure(p,2);if (!ptr) return 0;	*ptr++=']';*ptr=0;
         out=(p->buffer)+i;
     }
+    /* 如果p的空间还未申请，则需要先申请相应大小空间，然后 */
     else
     {
         /* Allocate an array to hold the values for each */
