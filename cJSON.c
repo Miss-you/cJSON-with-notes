@@ -554,7 +554,9 @@ static char *print_array(cJSON *item,int depth,int fmt,printbuffer *p)
         child=item->child;
         while (child && !fail)
         {
+            /* print */
             ret=print_value(child,depth+1,fmt,0);
+            /* 判断有无失败，并记录 */
             entries[i++]=ret;
             if (ret) len+=strlen(ret)+2+(fmt?1:0); else fail=1;
             child=child->next;
@@ -573,6 +575,7 @@ static char *print_array(cJSON *item,int depth,int fmt,printbuffer *p)
             return 0;
         }
         
+        /* print */
         /* Compose the output array. */
         *out='[';
         ptr=out+1;*ptr=0;
