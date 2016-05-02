@@ -636,6 +636,7 @@ static const char *parse_object(cJSON *item,const char *value)
     ep=value;return 0;	/* malformed. */
 }
 
+/* 简单来说就是遍历同级对象，并打印，带有部分迭代 */
 /* Render an object to text. */
 static char *print_object(cJSON *item,int depth,int fmt,printbuffer *p)
 {
@@ -816,6 +817,7 @@ cJSON *cJSON_CreateFloatArray(const float *numbers,int count)	{int i;cJSON *n=0,
 cJSON *cJSON_CreateDoubleArray(const double *numbers,int count)	{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateNumber(numbers[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}
 cJSON *cJSON_CreateStringArray(const char **strings,int count)	{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateString(strings[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}
 
+/* 复制一个cJSON对象 */
 /* Duplication */
 cJSON *cJSON_Duplicate(cJSON *item,int recurse)
 {
