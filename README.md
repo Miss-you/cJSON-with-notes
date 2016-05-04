@@ -1,10 +1,11 @@
 # cJSON-with-notes
 
-this is cJSON with notes
+个人博客
 
-parse noting
+http://blog.csdn.net/qq_15437667/
 
-落花人独立，微雨燕双飞。..头好痛。
+
+落花人独立，微雨燕双飞。
 
 > cJSON源码阅读有感
 
